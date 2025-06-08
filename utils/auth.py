@@ -15,8 +15,10 @@ firebaseConfig = {
 firebase = pyrebase.initialize_app(firebaseConfig)
 auth = firebase.auth()
 
+
 def is_authenticated():
-    return "user" in st.session_state and st.session_state.user is not None
+    return st.session_state.get("logged_in", False) and "user_id" in st.session_state
+
 
 def login_ui():
     with st.expander("🔐 Login", expanded=True):
@@ -25,11 +27,14 @@ def login_ui():
         if st.button("Login"):
             try:
                 user = auth.sign_in_with_email_and_password(email, password)
-                st.session_state.user = user
+                # Save relevant info in session state
+                st.session_state["user"] = user
+                st.session_state["user_id"] = user['localId']
+                st.session_state["logged_in"] = True
                 st.success("Logged in successfully!")
-                st.rerun()  # rerun immediately, so error below won't show
-            except Exception:
-                st.error("Login failed. Please check your credentials.")
+                st.rerun()  # rerun so page reloads with login state
+            except Exception as e:
+                st.error(f"Login failed: {e}")
 
 
 def signup_ui():
@@ -41,4 +46,4 @@ def signup_ui():
                 user = auth.create_user_with_email_and_password(email, password)
                 st.success("Account created successfully! You can now log in.")
             except Exception as e:
-                st.error("Signup failed. Please try again.")
+                st.error(f"Signup failed: {e}")

@@ -1,19 +1,21 @@
 import streamlit as st
 from utils.auth import login_ui, signup_ui, is_authenticated
 
-# Set page config (only once!)
-if not is_authenticated():
-    st.set_page_config(page_title="Login", layout="centered", initial_sidebar_state="collapsed")
-else:
-    st.set_page_config(page_title="Home", layout="centered")
+from database import initialize_database
+initialize_database()
 
-# Show login/signup only if not logged in
+# ✅ Set page config (Streamlit doesn't allow multiple calls)
+if "page_configured" not in st.session_state:
+    st.set_page_config(page_title="PCOS Tracker", layout="centered", initial_sidebar_state="collapsed")
+    st.session_state.page_configured = True
+
+# ✅ Show login/signup UI if not authenticated
 if not is_authenticated():
     login_ui()
     signup_ui()
     st.stop()
 
-# 🏠 Main page content if authenticated
+# ✅ Authenticated: Show Home Page
 st.markdown("""
     <h1 style='text-align: center; color: #d81b60;'>Welcome to Your PCOS Tracker 🌸</h1>
     <p style='text-align: center; font-size: 18px;'>Your cozy space to log, track & predict your health 🧘‍♀️💖</p>
@@ -35,8 +37,8 @@ st.markdown("""
 <p style='color:#4a148c;'>Drink enough water and get 7-8 hours of sleep to improve hormonal balance 💧🌙</p>
 """, unsafe_allow_html=True)
 
-# Logout button
-if st.button("Logout"):
-    st.session_state.user = None
+# ✅ Logout Button
+if st.button("🚪 Logout"):
+    st.session_state.clear()
     st.success("Logged out successfully.")
-    st.experimental_rerun()
+    st.rerun()
